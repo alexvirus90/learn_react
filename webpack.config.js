@@ -8,7 +8,7 @@ module.exports = {
     entry: [
         'webpack-dev-server/client?http://localhost:3000',
         'webpack/hot/dev-server',
-        './src/home.js'
+        './src/index.js'
     ],
     output: {
         publicPath: 'http://localhost:3000/',
