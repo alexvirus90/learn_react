@@ -1,13 +1,20 @@
 import React, { PropTypes } from 'react';
-import Input from '../../components/ui/input/index';
 import { bindAll } from 'lodash';
 import { connect } from 'react-redux';
-import { addTodo, deleteTodo, likeTodo } from './actions';
+import {
+    addTodo,
+    likeTodo,
+    deleteTodo,
+    getTodos
+} from './actions';
+import Input from '../../components/ui/input/index';
+import Loader from '../../components/ui/loader/index';
 import classnames from 'classnames';
+import { LS } from '../../utils/index';
 import './styles.less';
 
 class HomePage extends React.Component {
-    
+
     static path = '/';
     static propTypes = {
         home: PropTypes.object.isRequired,
@@ -22,6 +29,8 @@ class HomePage extends React.Component {
         };
 
         bindAll(this, ['renderTodos', 'inputOnChange', 'addTodo']);
+
+        this.props.dispatch( getTodos() );
     }
 
     inputOnChange(value) {
@@ -29,25 +38,8 @@ class HomePage extends React.Component {
     }
 
     addTodo() {
-        // if (this.state.todoName === '') {
-        //     this.setState({ error: 'Поле не должно быть пустым!' });
-        //     return;
-        // }
-		//
-        // const id = this.state.todos[this.state.todos.length - 1].id + 1;
-        // const name = this.state.todoName;
-		//
-        // const todos = this.state.todos;
-        // todos.push({ id, name });
-		//
-        // this.setState({ todos });
-        // this.setState({ todoName: '', error: ''});
-
-        const { todos } = this.props.home;
-        const id = todos[todos.length - 1].id + 1;
-        const name = this.state.todoName;
-        this.props.dispatch( addTodo(id, name) );
-        this.setState({ todoName: '' });
+        this.props.dispatch( addTodo(this.props.home.todos, this.state.todoName) );
+        this.setState({ todoName: ''});
     }
 
     renderTodos(item, idx) {
@@ -73,15 +65,21 @@ class HomePage extends React.Component {
     likeTodo(todo) {
         this.props.dispatch( likeTodo(todo) );
     }
-    
+
     render() {
         const { todoName } = this.state;
-        const { todos, error } = this.props.home;
+        const { todos, error, isLoading } = this.props.home;
+        LS.set('todos', todos);
         return (
             <div className='row-fluid b-home'>
                 <div className='col-xs-12'>
                     <ul>
-                        { todos.map(this.renderTodos) }
+                        { isLoading
+                            ? <Loader />
+                            : todos.length !== 0
+                                ? todos.map(this.renderTodos)
+                                : 'Элементов нет'
+                        }
                     </ul>
                     <div className='col-xs-4'>
                         <Input
@@ -95,6 +93,7 @@ class HomePage extends React.Component {
             </div>
         );
     }
+
 }
 
 function mapStateToProps(state) {
